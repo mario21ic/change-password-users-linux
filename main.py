@@ -3,6 +3,7 @@
 import pwd
 import string
 from random import choice
+import os
 import csv
 
 
@@ -17,7 +18,7 @@ def generate_password(length):
     return ''.join(choice("1234567890" + string.letters + string.digits + '_-.$') for _ in range(length))
 
 def change_pass(user, password):
-    return True
+    return os.system("echo '"+user+":"+password+"' | chpasswd")
 
 def write_csv(data):
     with open('report.csv', 'wb') as csvfile:
