@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
+import ConfigParser
 import pwd
 import string
 from random import choice
 import os
+import subprocess
+from subprocess import PIPE,Popen
 import csv
 
 
@@ -15,10 +18,17 @@ def list_users():
     return users
 
 def generate_password(length):
-    return ''.join(choice("1234567890" + string.letters + string.digits + '_-.$') for _ in range(length))
+    return ''.join(choice(string.letters + string.digits + '_-.$') for _ in range(length))
 
 def change_pass(user, password):
-    return os.system("echo '"+user+":"+password+"' | chpasswd")
+    echo_process = Popen(["echo", user+":"+password], stdout=PIPE)
+    chpasswd_process = Popen(["chpasswd"], stdin=echo_process.stdout, stdout=PIPE, stderr=PIPE)
+    echo_process.stdout.close()
+    output = chpasswd_process.communicate()[0]
+    chpasswd_process.stdout.close()
+    if output=='':
+        return True
+    return False
 
 def write_csv(data):
     with open('report.csv', 'wb') as csvfile:
@@ -28,9 +38,8 @@ def write_csv(data):
             writer.writerow(line)
 
 def main():
-    users = list_users()
     data = []
-    for user in users:
+    for user in list_users():
         password = generate_password(16)
         if change_pass(user, password):
             data.append([user, password])
