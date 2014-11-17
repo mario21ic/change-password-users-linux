@@ -8,12 +8,20 @@ import os
 import subprocess
 from subprocess import PIPE,Popen
 import csv
+import ConfigParser
+
+
+config = ConfigParser.ConfigParser()
+config.read("config.ini")
+uid_start = config.getint("settings", "uid_start")
+uid_end = config.getint("settings", "uid_end")
 
 
 def list_users():
     users = []
     for p in pwd.getpwall():
-        if "/home/" in p.pw_dir and p.pw_uid >= 1000:
+        if (p.pw_uid in range(uid_start, uid_end)) \
+                and "/home/" in p.pw_dir:
             users.append(p.pw_name)
     return users
 
